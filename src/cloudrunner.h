@@ -10,9 +10,10 @@
 
 #include <Arduino.h>
 #include "constants.h"
+#include <stdint.h>
 class CloudRunner{
     private:
-        //Tresholds and Calibration values for sensors
+        //Thresholds and Calibration values for sensors
         int R_onblk_thresh=0;    //threshold value for Right turn detection
         int L_onblk_thresh=0;    //threshold value for Left turn detection
 
@@ -20,17 +21,29 @@ class CloudRunner{
         int LB_vals[SENSOR_NUM];
         int UB_vals[SENSOR_NUM];
 
+        //sensor baseline variables
+        uint16_t raw_vals[SENSOR_NUM] = {0};
+        int16_t norm_vals[SENSOR_NUM] = {0};
+        uint16_t baseline_vals[SENSOR_NUM] = {0};
+        uint16_t black_thresh_vals[SENSOR_NUM] = {0};
+        uint8_t low_baseline_count[SENSOR_NUM] = {0};
+        
+        //position calc variables
+        int8_t rel_pos;
+        int8_t center_offset;
+
+
         //Global Variables for Line Tracing
-        float mass=0;
-        float torque=0;
-        float pos=0;
-        int target_pos =101;
-        int torque_multiplier=100;
-        int fivepin[5] = {2,4,5,7,8};
-        int threepin[3] = {4,5,7};
+        float mass = 0;
+        float torque = 0;
+        float pos = 0;
+        int target_pos = 0;
+        int torque_multiplier = 100;
+        int fivepin[5] = {SENSOR_5_0,SENSOR_5_1,SENSOR_5_2,SENSOR_5_3,SENSOR_5_4};
+        int threepin[3] = {SENSOR_3_0,SENSOR_3_1,SENSOR_3_2};
         int *pin;
         int count = 0;
-        int intersectionCount =0;
+        int intersectionCount = 0;
 
         //Global variables for manual calibration
         int L_spd_offset =0;
@@ -38,18 +51,20 @@ class CloudRunner{
         int LB_spd = 0;
         int UB_spd = 255;
         int INIT_spd = 60;
+        float L_spd_mult = 1;
+        float R_spd_mult = 1;
 
         //Global Variables for PID
-        float Ki = 0, Kp = 4 , Kd = 2 ;
+        float Ki = 0, Kp = 4 , Kd = 2;
         int P = 0 , I = 0, D = 0 , old_D = 0 , old_error = 0;
 
         //Boolean for maze_end
+        uint8_t turn_status;
         boolean maze_end = false;
         boolean L_turn_detected = false;
         boolean R_turn_detected = false;
         boolean Intersect_detected = false;
         boolean with_intersection = false;
-
     public:
         CloudRunner();
 
@@ -58,16 +73,34 @@ class CloudRunner{
 
         //Sensor utility functions
         int read_sensor(int p_sensor_pin);
+        void read_all_sensors();
         void test_read_sensor();
         void calibrate_PID_sensors();
         void calibrate_turn_sensors();
         int get_pos();
         int get_norm_pos();
 
+
+        //sensor baseline algorithm functions
+        void init_baselines();
+        void update_baselines();
+        void print_baselines();
+        void norm_sensors();
+        void print_raw();
+        void print_norm_vals();
+        void init_black_thresholds();
+        void print_black_thresholds();
+        
+        //position calc functions
+        void calc_pos();
+        int16_t get_pos_new();
+
         //PID related functions
         void PID_steer(int p_PID_val);
         int PID_calc(int p_error_val);
         void check_turn();
+        uint8_t check_turn_new();
+        bool has_turn();
         void reset_turn_detect();
 
         //Motor driver utility functions
@@ -83,6 +116,10 @@ class CloudRunner{
         void set_count(int val);
         void set_L_spd_offset(int offset);
         void set_R_spd_offset(int offset);
+        void set_L_spd_mult(float mult);
+        void set_R_spd_mult(float mult);
+        void set_L_onblk_thresh(uint16_t thresh);
+        void set_R_onblk_thresh(uint16_t thresh);
         void set_LB_spd(int speed);
         void set_UB_spd(int speed);
         void set_INIT_spd(int speed);

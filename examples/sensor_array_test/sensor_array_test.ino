@@ -3,7 +3,7 @@
 CloudRunner board;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   //Initialize board and motors
   board.begin();

@@ -1,8 +1,8 @@
 
 #define L_SPEED_PIN 10 //D10
 #define R_SPEED_PIN 9 //D9
-#define L_FORWARD A0  //A0
-#define L_BACKWARD A1 //A1
+#define L_FORWARD A1  //A0
+#define L_BACKWARD A0 //A1
 #define R_FORWARD A2 //A2
 #define R_BACKWARD A3 //A3                                                                      
 
@@ -21,8 +21,8 @@ void loop() {
   digitalWrite(L_FORWARD,HIGH);
   digitalWrite(L_BACKWARD,LOW);
 
-  digitalWrite(R_FORWARD,HIGH);
-  digitalWrite(R_BACKWARD,LOW);
+  digitalWrite(R_FORWARD,LOW);
+  digitalWrite(R_BACKWARD,HIGH);
   
   
   analogWrite(L_SPEED_PIN,255);
